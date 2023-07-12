@@ -4,7 +4,7 @@ const SQL = await initSqlJs({
     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
 });
 
-const buffer = await fetch("/jmdict.db").then(res => res.arrayBuffer());
+const buffer = await fetch("./jmdict.db").then(res => res.arrayBuffer());
 const database = new SQL.Database(new Uint8Array(buffer));
 window.db = database;
 
