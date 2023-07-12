@@ -1,0 +1,55 @@
+html {
+    background-color: whitesmoke;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+main {
+    width: 100%;
+    margin: auto;
+}
+
+@media (min-width: 768px) {
+    main {
+        width: 70%;
+    }
+}
+
+input#search {
+    font-size: large;
+    text-align: center;
+    width: 100%;
+    padding: 0.4em;
+    border-radius: 0.4em;
+}
+
+#mecab {
+    margin-top: 1em;
+}
+
+.mecab-wrapper {
+    margin: 0 0.2em;
+}
+
+.mecab-token {
+    padding: 0.1em 0.2em;
+    margin: 0;
+    font-size: large;
+    background-color: transparent;
+    border: 0.5px solid black;
+}
+
+.mecab-token:hover {
+    font-weight: bolder;
+}
+
+/* Helpers */
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.center {
+    align-self: center;
+}

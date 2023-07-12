@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.min.js"
+        integrity="sha512-VYs2RuvWreNg7oouVhZ/9bEvdPgyd5L2iCPCB8+8Qks/PHbmnc82TQOEctYoEKPveJGML8s+3NGcUEZYJrFIqg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="module" src="index.mjs" defer></script>
+</head>
+
+<body>
+    <main>
+        <section class="flex-column">
+            <h1 class="center">言の葉！</h1>
+            <input class="center" type="text" name="search" id="search" placeholder="Enter a word, phrase, or sentence">
+            <div class="center" id="mecab"></div>
+        </section>
+        <section class="flex-column">
+            <h2 class="center">Results</h2>
+            <div id="results"></div>
+        </section>
+        <section>
+            <h2>Acknowledgements</h2>
+            <p>This site wouldn't be possible without the amazing work of these developers</p>
+            <ul>
+                <li>Sentence breakdown powered by <a href="https://github.com/itayperl/mecab-wasm">mecab-wasm</a></li>
+                <li>Database lookup powered by <a href="https://github.com/sql-js/sql.js/">sql.js</a></li>
+            </ul>
+            <p>Word data sourced from JMdict is copyrighted by the <a href="https://www.edrdg.org/"><em>Electronic
+                        Dictionary Research and Development Group</em></a>, and is used here under a <em>Creative
+                    Commons Attribution-ShareAlike Licence</em>. More information about usage can be found on <a
+                    href="https://www.edrdg.org/edrdg/licence.html">their website</a>.</p>
+        </section>
+    </main>
+</body>
+
+</html>
