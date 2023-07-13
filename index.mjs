@@ -25,17 +25,26 @@ const searchInput = document.getElementById('search');
 
 await Mecab.waitReady();
 
-const onSearch = throttle(runMecab, 500);
+const onSearch = throttle(() => {
+    const search = searchInput.value;
+
+    if (/[a-zA-Z0-9 ]+/.test(search)) {
+        runMecab('');
+        lookup(search, false)
+    } else {
+        runMecab(search);
+        const event = new Event('click');
+        mecabDiv.firstChild?.firstChild?.dispatchEvent(event);
+    }
+}, 500);
 
 searchInput.addEventListener('input', onSearch);
 searchInput.addEventListener('paste', onSearch);
 searchInput.addEventListener('change', onSearch);
 
-searchInput.value = 'おはようございます！';
-onSearch();
+runMecab('おはようございます！');
 
-function runMecab() {
-    const search = searchInput.value;
+function runMecab(search) {
     const tokens = [];
 
     for (const token of Mecab.query(search)) {
@@ -90,12 +99,21 @@ function sqlite(query, binding) {
     return results;
 }
 
-async function lookup(word) {
+
+/**
+ * Lookup a word and fill out the results
+ * @param {string} word Search term
+ * @param {boolean} japanese Search for Japanese
+ */
+async function lookup(word, japanese = true) {
     const resultsDiv = document.getElementById('results');
 
-    const results = sqlite(
-        `SELECT DISTINCT EntryId FROM WordForms WHERE Form LIKE "%" || :word || "%"`,
-        { ':word': word });
+    const results = japanese
+        ? sqlite(
+            `SELECT DISTINCT EntryId FROM WordForms WHERE Form LIKE "%" || :word || "%"`,
+            { ':word': word })
+        : sqlite(`SELECT DISTINCT EntryId FROM Subentries INNER JOIN (SELECT SubentryId as Id FROM Quotations WHERE Content LIKE "%" || :word || "%") WHERE Subentries.SubentryId = Id`,
+            { ':word': word });
 
     const entries = [];
     for (const id of results.map(row => row.EntryId)) {
