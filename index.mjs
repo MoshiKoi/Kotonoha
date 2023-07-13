@@ -4,8 +4,12 @@ const SQL = await initSqlJs({
     locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
 });
 
-const buffer = await fetch("./jmdict.db").then(res => res.arrayBuffer());
-const database = new SQL.Database(new Uint8Array(buffer));
+const ds = new DecompressionStream("gzip");
+const response = await fetch("./jmdict.db.gz");
+const decompressionStream = response.body.pipeThrough(ds);
+const blob = await new Response(decompressionStream).arrayBuffer();
+
+const database = new SQL.Database(new Uint8Array(blob));
 window.db = database;
 
 function throttle(fn, timeout) {
