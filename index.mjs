@@ -1,3 +1,4 @@
+import { createEntry } from "./templates.mjs";
 import Mecab from "https://unpkg.com/mecab-wasm@1.0.2/lib/mecab.js";
 
 const SQL = await initSqlJs({
@@ -118,28 +119,20 @@ async function lookup(word, japanese = true) {
     const entries = [];
     for (const id of results.map(row => row.EntryId)) {
         const forms = sqlite(`SELECT Form FROM WordForms WHERE EntryId = :id`, { ':id': id })
-            .map(row => row.Form)
-            .join('・');
+            .map(row => row.Form);
 
-        const subentries = sqlite(`SELECT SubentryId FROM Subentries WHERE EntryId = :id`, { ':id': id })
+        const subentries = sqlite(`SELECT SubentryId, PartOfSpeech FROM Subentries WHERE EntryId = :id`, { ':id': id })
             .map(row => {
-                const el = document.createElement('ul');
-                const glosses = sqlite(`SELECT * FROM Quotations WHERE SubentryId = :id`, { ':id': row.SubentryId })
-                    .map(row => {
-                        const el = document.createElement('li');
-                        el.innerText = row.Content;
-                        return el;
-                    });
-                el.append(...glosses);
-                return el;
+                const glosses = sqlite(`SELECT Content FROM Quotations WHERE SubentryId = :id`, { ':id': row.SubentryId })
+                    .map(row => ({ content: row.Content }));
+
+                return { 
+                    part_of_speech: row.PartOfSpeech,
+                    glosses: glosses,
+                };
             });
-
-        const heading = document.createElement('h3');
-        heading.innerText = forms;
-
-        const entryDiv = document.createElement('div');
-        entryDiv.append(heading, ...subentries);
-        entries.push(entryDiv);
+        
+        entries.push(createEntry(forms, subentries));
     }
 
     resultsDiv.replaceChildren(...entries);
