@@ -27,6 +27,12 @@ input#search {
     margin-top: 1em;
 }
 
+h1,
+h2,
+h3 {
+    font-weight: normal;
+}
+
 .mecab-wrapper {
     margin: 0 0.2em;
 }
@@ -41,6 +47,36 @@ input#search {
 
 .mecab-token:hover {
     font-weight: bolder;
+}
+
+/* Entries */
+
+.entry {
+    box-shadow: lightgray 1px 3px 8px;
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.entry>* {
+    margin: 0.4em 0;
+}
+
+.part-of-speech {
+    font-style: italic;
+    font-weight: normal;
+}
+
+.gloss-list {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+}
+
+.gloss-list>li {
+    margin: 0.5em 1em;
+    list-style-position: inside;
 }
 
 /* Helpers */
