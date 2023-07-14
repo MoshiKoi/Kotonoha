@@ -3,7 +3,6 @@
  */
 
 export function createEntry(forms, subentries) {
-    console.log(forms, subentries);
     const entryEl = document.createElement('div');
     entryEl.classList.add('entry')
 

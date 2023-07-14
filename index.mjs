@@ -94,7 +94,6 @@ function sqlite(query, binding) {
         results.push(stmt.getAsObject());
     }
 
-    console.log(stmt.getSQL());
     stmt.free();
 
     return results;
