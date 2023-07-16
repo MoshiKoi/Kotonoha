@@ -33,6 +33,15 @@ h3 {
     font-weight: normal;
 }
 
+cite {
+    font-size: smaller;
+    color:dimgray;
+}
+
+cite > a {
+    color: inherit;
+}
+
 .mecab-wrapper {
     margin: 0 0.2em;
 }

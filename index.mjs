@@ -1,4 +1,4 @@
-import { createEntry } from "./templates.mjs";
+import { createEntry, createMecabTokenElements } from "./templates.mjs";
 import Mecab from "https://unpkg.com/mecab-wasm@1.0.2/lib/mecab.js";
 
 const SQL = await initSqlJs({
@@ -30,10 +30,10 @@ const onSearch = throttle(() => {
     const search = searchInput.value;
 
     if (/[a-zA-Z0-9 ]+/.test(search)) {
-        runMecab('');
+        mecabDiv.replaceChildren();
         lookup(search, false)
     } else {
-        runMecab(search);
+        mecabDiv.replaceChildren(...createMecabTokenElements(search, form => lookup(form)));
         const event = new Event('click');
         mecabDiv.firstChild?.firstChild?.dispatchEvent(event);
     }
@@ -42,48 +42,6 @@ const onSearch = throttle(() => {
 searchInput.addEventListener('input', onSearch);
 searchInput.addEventListener('paste', onSearch);
 searchInput.addEventListener('change', onSearch);
-
-runMecab('おはようございます！');
-
-function runMecab(search) {
-    const tokens = [];
-
-    for (const token of Mecab.query(search)) {
-        const tokenElement = document.createElement('button');
-        tokenElement.classList.add('mecab-token');
-
-        let attach = false;
-
-        switch (token.pos) {
-            case '名詞': tokenElement.classList.add('mecab-noun'); break;
-            case '助詞': tokenElement.classList.add('mecab-particle'); break;
-            case '助動詞': tokenElement.classList.add('mecab-verb', 'mecab-aux'); attach = true; break;
-            case '動詞': tokenElement.classList.add('mecab-verb'); break;
-            case '副詞': tokenElement.classList.add('mecab-adverb'); break;
-            case '連体詞': tokenElement.classList.add('mecab-prenominal'); break;
-        }
-
-        switch (token.pos_detail1) {
-            case '接続助詞': tokenElement.classList.add('mecab-conj'); attach = true; break;
-            case '接尾': tokenElement.classList.add('mecab-suffix'); attach = true; break;
-        }
-
-        tokenElement.innerText = token.word;
-        tokenElement.addEventListener('click', () => lookup(token.dictionary_form));
-
-        let wrapper;
-        if (attach) {
-            wrapper = tokens[tokens.length - 1];
-        } else {
-            wrapper = document.createElement('span');
-            wrapper.classList.add('mecab-wrapper');
-            tokens.push(wrapper);
-        }
-        wrapper.appendChild(tokenElement);
-    }
-
-    mecabDiv.replaceChildren(...tokens);
-}
 
 function sqlite(query, binding) {
     const stmt = db.prepare(query);
@@ -131,7 +89,7 @@ async function lookup(word, japanese = true) {
                 };
             });
         
-        entries.push(createEntry(forms, subentries));
+        entries.push(await createEntry(forms, subentries));
     }
 
     resultsDiv.replaceChildren(...entries);
