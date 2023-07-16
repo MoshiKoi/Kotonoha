@@ -16,3 +16,11 @@ View on GitHub Pages! https://moshikoi.github.io/Kotonoha/
  - Better ordering of results
  - Unidic pitch accents
  - Stablize the database generation tools
+
+# Deploying
+
+Following [this guide](https://gist.github.com/cobyism/4730490), to deploy the site to GitHub Pages, run the following
+
+```
+git subtree push --prefix pages origin gh-pages
+```
