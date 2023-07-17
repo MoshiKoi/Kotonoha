@@ -54,11 +54,19 @@ export function createMecabTokenElements(search, onclick) {
 
 async function createMassif(search) {
     const details = document.createElement('details');
+
     const summary = document.createElement('summary');
     summary.innerText = 'Sentences from massif.la';
-    details.append(summary);
+
+    const loadingMessage = document.createElement('p');
+    loadingMessage.classList.add('loading-message');
+    loadingMessage.innerText = 'Loading...';
+
+    details.append(summary, loadingMessage);
     details.addEventListener('toggle', async () => {
-        if (details.open && details.children.length == 1) {
+        const loadingMessage = details.querySelector('.loading-message');
+        if (details.open && loadingMessage != null) {
+            loadingMessage.remove();
             const sentences = [];
             for (const { sample_source: { title, url, publish_date }, text } of await massifLookup(search)) {
                 const sentenceWrapper = document.createElement('figure');
@@ -76,6 +84,11 @@ async function createMassif(search) {
                 sentences.push(sentenceWrapper);
             }
             details.append(...sentences);
+            if (sentences.length == 0) {
+                const notFoundMessage = document.createElement('p');
+                notFoundMessage.innerText = 'No examples found';
+                details.append(notFoundMessage);
+            }
         }
     });
 
