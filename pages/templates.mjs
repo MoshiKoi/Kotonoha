@@ -105,6 +105,11 @@ export async function createEntry(forms, subentries) {
 
         const subentryEl = document.createElement('ul');
         subentryEl.classList.add('gloss-list');
+        // The database format is planned to be changed anyway before adding new sources,
+        // so this entire section will most likely be entirely rewritten anyway
+        const citeNote = document.createElement('cite');
+        citeNote.innerText = 'JMdict';
+        subentryEl.append(citeNote);
         for (const gloss of subentry.glosses) {
             const glossEl = document.createElement('li');
             glossEl.innerText = gloss.content;
