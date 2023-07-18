@@ -66,7 +66,7 @@ async function createMassif(search) {
     details.addEventListener('toggle', async () => {
         const loadingMessage = details.querySelector('.loading-message');
         if (details.open && loadingMessage != null) {
-            loadingMessage.remove();
+            loadingMessage.classList.remove('loading-message');
             const sentences = [];
             for (const { sample_source: { title, url, publish_date }, text } of await massifLookup(search)) {
                 const sentenceWrapper = document.createElement('figure');
@@ -89,6 +89,7 @@ async function createMassif(search) {
                 notFoundMessage.innerText = 'No examples found';
                 details.append(notFoundMessage);
             }
+            loadingMessage.remove();
         }
     });
 
@@ -121,7 +122,7 @@ export async function createEntry(forms, subentries) {
         // The database format is planned to be changed anyway before adding new sources,
         // so this entire section will most likely be entirely rewritten anyway
         const citeNote = document.createElement('cite');
-        citeNote.innerText = 'JMdict';
+        citeNote.innerText = subentry.citation;
         subentryEl.append(citeNote);
         for (const gloss of subentry.glosses) {
             const glossEl = document.createElement('li');

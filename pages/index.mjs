@@ -6,7 +6,7 @@ const SQL = await initSqlJs({
 });
 
 const ds = new DecompressionStream("gzip");
-const response = await fetch("./jmdict.db.gz");
+const response = await fetch("./dictionary.db.gz");
 const decompressionStream = response.body.pipeThrough(ds);
 const blob = await new Response(decompressionStream).arrayBuffer();
 
@@ -70,7 +70,7 @@ async function lookup(word, japanese = true) {
         ? sqlite(
             `SELECT DISTINCT EntryId FROM WordForms WHERE Form LIKE "%" || :word || "%"`,
             { ':word': word })
-        : sqlite(`SELECT DISTINCT EntryId FROM Subentries INNER JOIN (SELECT SubentryId as Id FROM Quotations WHERE Content LIKE "%" || :word || "%") WHERE Subentries.SubentryId = Id`,
+        : sqlite(`SELECT DISTINCT EntryId FROM Subentries INNER JOIN (SELECT SubentryId as Id FROM Glosses WHERE Content LIKE "%" || :word || "%") WHERE Subentries.SubentryId = Id`,
             { ':word': word });
 
     const entries = [];
@@ -78,13 +78,15 @@ async function lookup(word, japanese = true) {
         const forms = sqlite(`SELECT Form FROM WordForms WHERE EntryId = :id`, { ':id': id })
             .map(row => row.Form);
 
-        const subentries = sqlite(`SELECT SubentryId, PartOfSpeech FROM Subentries WHERE EntryId = :id`, { ':id': id })
+        const subentries = sqlite(`SELECT SubentryId, PartOfSpeech, SourceCitationId FROM Subentries WHERE EntryId = :id`, { ':id': id })
             .map(row => {
-                const glosses = sqlite(`SELECT Content FROM Quotations WHERE SubentryId = :id`, { ':id': row.SubentryId })
+                const citation = sqlite(`SELECT Name, Description FROM Citations WHERE CitationId = :id`, { ':id': row.SourceCitationId })[0];
+                const glosses = sqlite(`SELECT Content FROM Glosses WHERE SubentryId = :id`, { ':id': row.SubentryId })
                     .map(row => ({ content: row.Content }));
 
                 return { 
                     part_of_speech: row.PartOfSpeech,
+                    citation: citation.Name,
                     glosses: glosses,
                 };
             });
