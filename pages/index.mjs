@@ -23,6 +23,9 @@ function throttle(fn, timeout) {
 
 const mecabDiv = document.getElementById('mecab');
 const searchInput = document.getElementById('search');
+const loadMoreBtn = document.getElementById('load-more');
+
+loadMoreBtn.addEventListener('click', loadMore);
 
 await Mecab.waitReady();
 
@@ -57,6 +60,7 @@ function sqlite(query, binding) {
     return results;
 }
 
+let query = null;
 
 /**
  * Lookup a word and fill out the results
@@ -65,34 +69,76 @@ function sqlite(query, binding) {
  */
 async function lookup(word, japanese = true) {
     const resultsDiv = document.getElementById('results');
+    resultsDiv.replaceChildren();
 
-    const results = japanese
-        ? sqlite(
-            `SELECT DISTINCT EntryId FROM WordForms WHERE Form LIKE "%" || :word || "%"`,
-            { ':word': word })
-        : sqlite(`SELECT DISTINCT EntryId FROM Subentries INNER JOIN (SELECT SubentryId as Id FROM Glosses WHERE Content LIKE "%" || :word || "%") WHERE Subentries.SubentryId = Id`,
-            { ':word': word });
+    query = new PaginatedQuery(database, word, japanese);
+    await loadMore();
+}
 
-    const entries = [];
-    for (const id of results.map(row => row.EntryId)) {
-        const forms = sqlite(`SELECT Form FROM WordForms WHERE EntryId = :id`, { ':id': id })
-            .map(row => row.Form);
+async function loadMore() {
+    const resultsDiv = document.getElementById('results');
 
-        const subentries = sqlite(`SELECT SubentryId, PartOfSpeech, SourceCitationId FROM Subentries WHERE EntryId = :id`, { ':id': id })
-            .map(row => {
-                const citation = sqlite(`SELECT Name, Description FROM Citations WHERE CitationId = :id`, { ':id': row.SourceCitationId })[0];
-                const glosses = sqlite(`SELECT Content FROM Glosses WHERE SubentryId = :id`, { ':id': row.SubentryId })
-                    .map(row => ({ content: row.Content }));
+    if (query) {
+        for (const entry of query.loadNext()) {
+            resultsDiv.append(await createEntry(entry.forms, entry.subentries));
+        }
+    }
+}
 
-                return { 
-                    part_of_speech: row.PartOfSpeech,
-                    citation: citation.Name,
-                    glosses: glosses,
-                };
-            });
-        
-        entries.push(await createEntry(forms, subentries));
+class PaginatedQuery {
+    constructor(db, searchTerm, japanese) {
+        this.db = db;
+        this.searchTerm = searchTerm;
+        this.japanese = japanese;
+        this.lastIndex = -1;
     }
 
-    resultsDiv.replaceChildren(...entries);
+    loadNext(limit = 10) {
+        // TODO: Figure out a better order than just by EntryId
+        const results = this.japanese
+            ? sqlite(
+                `SELECT DISTINCT EntryId FROM Forms
+WHERE Form LIKE "%" || :word || "%" AND EntryId > :lastId
+ORDER BY EntryId
+LIMIT :limit`,
+                { ':word': this.searchTerm, ':lastId': this.lastIndex, ':limit': limit })
+            : sqlite(
+                `SELECT DISTINCT EntryId FROM Subentries
+INNER JOIN (SELECT SubentryId as Id FROM Glosses WHERE Content LIKE "%" || :word || "%")
+WHERE Subentries.SubentryId = Id AND EntryId > :lastId
+ORDER BY EntryId
+LIMIT :limit`,
+                { ':word': this.searchTerm, ':lastId': this.lastIndex, ':limit': limit })
+
+        this.lastIndex = results[results.length - 1].EntryId;
+
+        const entries = [];
+        for (const id of results.map(row => row.EntryId)) {
+            const forms = sqlite(`SELECT Form FROM Forms WHERE EntryId = :id`, { ':id': id })
+                .map(row => row.Form);
+
+            const readings = sqlite(`SELECT Reading FROM Readings WHERE EntryId = :id`, { ':id': id })
+                .map(row => row.Form);
+
+            const subentries = sqlite(`SELECT SubentryId, PartOfSpeech, SourceCitationId FROM Subentries WHERE EntryId = :id`, { ':id': id })
+                .map(row => {
+                    const citation = sqlite(`SELECT Name, Description FROM Citations WHERE CitationId = :id`, { ':id': row.SourceCitationId })[0];
+                    const glosses = sqlite(`SELECT Content FROM Glosses WHERE SubentryId = :id`, { ':id': row.SubentryId })
+                        .map(row => ({ content: row.Content }));
+
+                    return {
+                        part_of_speech: row.PartOfSpeech,
+                        citation: citation.Name,
+                        glosses: glosses,
+                    };
+                });
+
+            entries.push({
+                forms,
+                readings,
+                subentries,
+            })
+        }
+        return entries;
+    }
 }
