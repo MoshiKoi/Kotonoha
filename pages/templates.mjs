@@ -2,10 +2,8 @@
  * Various HTML templates
  */
 
-import Mecab from "https://unpkg.com/mecab-wasm@1.0.2/lib/mecab.js";
+import { mecabParse } from "./mecab.mjs"
 import { massifLookup } from "./massif.mjs";
-
-await Mecab.waitReady();
 
 /**
  * 
@@ -15,7 +13,7 @@ await Mecab.waitReady();
 export function createMecabTokenElements(search, onclick) {
     const tokenEls = [];
 
-    for (const token of Mecab.query(search)) {
+    for (const token of mecabParse(search)) {
         const tokenElement = document.createElement('button');
         tokenElement.classList.add('mecab-token');
 
@@ -32,11 +30,12 @@ export function createMecabTokenElements(search, onclick) {
 
         switch (token.pos_detail1) {
             case '接続助詞': tokenElement.classList.add('mecab-conj'); attach = true; break;
+            case '非自立可能': tokenElement.classList.add('mecab-subs'); attach = true; break;
             case '接尾': tokenElement.classList.add('mecab-suffix'); attach = true; break;
         }
 
-        tokenElement.innerText = token.word;
-        tokenElement.addEventListener('click', () => onclick(token.dictionary_form));
+        tokenElement.innerText = token.str;
+        tokenElement.addEventListener('click', () => onclick(token.dictionary));
 
         let wrapper;
         if (attach) {
