@@ -58,6 +58,14 @@ cite > a {
     font-weight: bolder;
 }
 
+.unknown {
+    color: maroon;
+}
+
+.is-known-toggle {
+    float: right;
+}
+
 /* Entries */
 
 .entry {

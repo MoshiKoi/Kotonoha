@@ -1,21 +1,27 @@
+// @ts-check
+
 /**
  * Various HTML templates
  */
 
-import { mecabParse } from "./mecab.mjs"
 import { massifLookup } from "./massif.mjs";
+import { User } from "./user.mjs";
 
 /**
  * 
- * @param {string} search 
- * @returns {HTMLButtonElement[]}
+ * @param {(import("./mecab.mjs").MecabToken & {isUnknown?: boolean})[]} tokenization
+ * @param {function(string): any} onclick
+ * @returns {HTMLSpanElement[]}
 */
-export function createMecabTokenElements(search, onclick) {
+export function createMecabTokenElements(tokenization, onclick) {
     const tokenEls = [];
 
-    for (const token of mecabParse(search)) {
+    for (const token of tokenization) {
         const tokenElement = document.createElement('button');
         tokenElement.classList.add('mecab-token');
+        if (token.isUnknown) {
+            tokenElement.classList.add('unknown')
+        }
 
         let attach = false;
 
@@ -38,7 +44,7 @@ export function createMecabTokenElements(search, onclick) {
         tokenElement.addEventListener('click', () => onclick(token.dictionary));
 
         let wrapper;
-        if (attach) {
+        if (attach && tokenEls.length > 0) {
             wrapper = tokenEls[tokenEls.length - 1];
         } else {
             wrapper = document.createElement('span');
@@ -67,11 +73,11 @@ async function createMassif(search) {
         if (details.open && loadingMessage != null) {
             loadingMessage.classList.remove('loading-message');
             const sentences = [];
-            for (const { sample_source: { title, url, publish_date }, text } of await massifLookup(search)) {
+            for (const { sample_source: { title, url, publish_date }, tokenization, unknown } of await massifLookup(search)) {
                 const sentenceWrapper = document.createElement('figure');
                 const quoteEl = document.createElement('blockquote');
                 quoteEl.cite = url;
-                quoteEl.replaceChildren(...createMecabTokenElements(text));
+                quoteEl.replaceChildren(...createMecabTokenElements(tokenization, () => console.log("Not implemented")));
                 const citeWrapper = document.createElement('figcaption');
                 const citeNote = document.createElement('cite');
                 const citeLink = document.createElement('a');
@@ -95,19 +101,43 @@ async function createMassif(search) {
     return details;
 }
 
-export async function createEntry(forms, subentries) {
+/**
+ * @param {import("./sql.mjs").Entry} entry 
+ * @returns 
+ */
+export async function createEntry(entry) {
     const entryEl = document.createElement('div');
     entryEl.classList.add('entry')
 
-    const headingEl = document.createElement('h3');
-    headingEl.innerText = forms.join('・');
+    const headingEl = document.createElement('hgroup');
+    const formsEl = document.createElement('h3');
+    formsEl.innerText = entry.forms.join('・');
+    const readingEl = document.createElement('p');
+    readingEl.innerText = entry.readings.join('・');
+    
+    const isKnownLabel = document.createElement('label');
+    isKnownLabel.innerText = 'Known?';
+    isKnownLabel.classList.add('is-known-toggle')
+    const isKnownToggle = document.createElement('input');
+    isKnownToggle.type = 'checkbox';
+    isKnownLabel.append(isKnownToggle);
 
-    const massifEl = await createMassif(forms[0]);
+    isKnownToggle.checked = entry.forms.every(form => User.getKnownWords().includes(form));
+    isKnownToggle.addEventListener('change', _ => {
+        if (isKnownToggle.checked) {
+            User.addKnownWords(...entry.forms);
+        } else {
+            User.removeKnownWords(...entry.forms);
+        }
+    })
+
+    headingEl.append(isKnownLabel, formsEl, readingEl);
+    const massifEl = await createMassif(entry.forms[0]);
 
     let part_of_speech = null;
     const subentryEls = []
 
-    for (const subentry of subentries) {
+    for (const subentry of entry.subentries) {
         if (subentry.part_of_speech !== part_of_speech) {
             part_of_speech = subentry.part_of_speech;
             const headEl = document.createElement('h4');

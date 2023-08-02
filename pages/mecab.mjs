@@ -336,8 +336,12 @@ export function backtrace(buf, node) {
     return result.reverse();
 }
 
+
+/** @typedef {{str: string, pos: string, pos_detail1: string, dictionary: string, features: string[]}} MecabToken */
+
 /**
- * @param {string} str 
+ * @param {string} str
+ * @returns {MecabToken[]}
  */
 export function mecabParse(str) {
     const encoder = new TextEncoder();
