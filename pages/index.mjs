@@ -3,6 +3,10 @@ import { createEntry, createMecabTokenElements } from "./templates.mjs";
 import { PaginatedQuery } from "./sql.mjs";
 import { mecabParse } from "./mecab.mjs";
 
+/**
+ * @param {function(...*): void} fn 
+ * @param {number} timeout 
+ */
 function throttle(fn, timeout) {
     let timeoutId;
     return function (...args) {

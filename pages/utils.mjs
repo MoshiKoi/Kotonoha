@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * @param {URL | RequestInfo} input 
  * @returns {Promise<ArrayBuffer>}
