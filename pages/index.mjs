@@ -11,14 +11,10 @@ function throttle(fn, timeout) {
     }
 }
 
-/** @type {HTMLDivElement} */
-const mecabDiv = document.getElementById('mecab');
-
-/** @type {HTMLInputElement} */
-const searchInput = document.getElementById('search');
-
-/** @type {HTMLButtonElement} */
-const loadMoreBtn = document.getElementById('load-more');
+const mecabDiv = /** @type {HTMLDivElement} */ (document.getElementById('mecab'));
+const searchInput = /** @type {HTMLInputElement} */ (document.getElementById('search'));
+const loadMoreBtn = /** @type {HTMLButtonElement} */ (document.getElementById('load-more'));
+const resultsDiv = /** @type {HTMLDivElement} */ (document.getElementById('results'));
 
 loadMoreBtn.addEventListener('click', loadMore);
 
@@ -48,7 +44,6 @@ let query = null;
  * @param {boolean} japanese Search for Japanese
  */
 async function lookup(word, japanese = true) {
-    const resultsDiv = document.getElementById('results');
     resultsDiv.replaceChildren();
 
     query = new PaginatedQuery(word, japanese);
@@ -56,8 +51,6 @@ async function lookup(word, japanese = true) {
 }
 
 async function loadMore() {
-    const resultsDiv = document.getElementById('results');
-
     if (query) {
         for (const entry of query.loadNext()) {
             resultsDiv.append(await createEntry(entry));
