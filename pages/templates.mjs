@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * Various HTML templates
  */
@@ -7,8 +9,9 @@ import { massifLookup } from "./massif.mjs";
 
 /**
  * 
- * @param {string} search 
- * @returns {HTMLButtonElement[]}
+ * @param {string} search
+ * @param {function(string): any} onclick
+ * @returns {HTMLSpanElement[]}
 */
 export function createMecabTokenElements(search, onclick) {
     const tokenEls = [];
@@ -71,7 +74,7 @@ async function createMassif(search) {
                 const sentenceWrapper = document.createElement('figure');
                 const quoteEl = document.createElement('blockquote');
                 quoteEl.cite = url;
-                quoteEl.replaceChildren(...createMecabTokenElements(text));
+                quoteEl.replaceChildren(...createMecabTokenElements(text, () => console.log("Not implemented")));
                 const citeWrapper = document.createElement('figcaption');
                 const citeNote = document.createElement('cite');
                 const citeLink = document.createElement('a');
@@ -95,19 +98,26 @@ async function createMassif(search) {
     return details;
 }
 
-export async function createEntry(forms, subentries) {
+/**
+ * @param {import("./sql.mjs").Entry} entry 
+ * @returns 
+ */
+export async function createEntry(entry) {
     const entryEl = document.createElement('div');
     entryEl.classList.add('entry')
 
-    const headingEl = document.createElement('h3');
-    headingEl.innerText = forms.join('・');
-
-    const massifEl = await createMassif(forms[0]);
+    const headingEl = document.createElement('hgroup');
+    const formsEl = document.createElement('h3');
+    formsEl.innerText = entry.forms.join('・');
+    const readingEl = document.createElement('p');
+    readingEl.innerText = entry.readings.join('・');
+    headingEl.append(formsEl, readingEl);
+    const massifEl = await createMassif(entry.forms[0]);
 
     let part_of_speech = null;
     const subentryEls = []
 
-    for (const subentry of subentries) {
+    for (const subentry of entry.subentries) {
         if (subentry.part_of_speech !== part_of_speech) {
             part_of_speech = subentry.part_of_speech;
             const headEl = document.createElement('h4');

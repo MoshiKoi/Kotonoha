@@ -1,3 +1,4 @@
+// @ts-check
 import { createEntry, createMecabTokenElements } from "./templates.mjs";
 import { PaginatedQuery } from "./sql.mjs";
 
@@ -53,7 +54,7 @@ async function loadMore() {
 
     if (query) {
         for (const entry of query.loadNext()) {
-            resultsDiv.append(await createEntry(entry.forms, entry.subentries));
+            resultsDiv.append(await createEntry(entry));
         }
     }
 }

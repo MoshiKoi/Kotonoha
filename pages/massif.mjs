@@ -1,7 +1,7 @@
 /**
  * 
  * @param {string} str 
- * @returns {Promise<string[]>}
+ * @returns {Promise<{ sample_source: { title: string, url: string, publish_date: string }, text: string }[]>}
  */
 export async function massifLookup(str) {
     const response = await fetch(`https://massif.la/ja/search?q=${encodeURIComponent(str)}&fmt=json`);

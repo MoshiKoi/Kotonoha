@@ -29,7 +29,8 @@ function sqlite(query, binding) {
 }
 
 /**
- * @typedef {{part_of_speech: string, citation: string, glosses: string[]}} Subentry
+ * @typedef {{content: string}} Gloss
+ * @typedef {{part_of_speech: string, citation: string, glosses: Gloss[]}} Subentry
  * @typedef {{forms: string[], readings: string[], subentries: Subentry[]}} Entry
  */
 
@@ -79,7 +80,7 @@ LIMIT :limit`,
                 .map(row => row.Form);
 
             const readings = sqlite(`SELECT Reading FROM Readings WHERE EntryId = :id`, { ':id': id })
-                .map(row => row.Form);
+                .map(row => row.Reading);
 
             const subentries = sqlite(`SELECT SubentryId, PartOfSpeech, SourceCitationId FROM Subentries WHERE EntryId = :id`, { ':id': id })
                 .map(row => {
