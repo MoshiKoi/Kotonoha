@@ -24,14 +24,6 @@ View on GitHub Pages! https://moshikoi.github.io/Kotonoha/
  - Unidic pitch accents
  - Stablize the database generation tools
 
-# Deploying
-
-Following [this guide](https://gist.github.com/cobyism/4730490), to deploy the site to GitHub Pages, run the following
-
-```
-git subtree push --prefix pages origin gh-pages
-```
-
 # Licence information
 
 The licences for libraries used are copied into the `licences` folder, with file names corresponding with the library.
