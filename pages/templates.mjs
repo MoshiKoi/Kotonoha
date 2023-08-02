@@ -41,7 +41,7 @@ export function createMecabTokenElements(search, onclick) {
         tokenElement.addEventListener('click', () => onclick(token.dictionary));
 
         let wrapper;
-        if (attach) {
+        if (attach && tokenEls.length > 0) {
             wrapper = tokenEls[tokenEls.length - 1];
         } else {
             wrapper = document.createElement('span');
