@@ -1,6 +1,7 @@
 // @ts-check
 import { createEntry, createMecabTokenElements } from "./templates.mjs";
 import { PaginatedQuery } from "./sql.mjs";
+import { mecabParse } from "./mecab.mjs";
 
 function throttle(fn, timeout) {
     let timeoutId;
@@ -10,8 +11,13 @@ function throttle(fn, timeout) {
     }
 }
 
+/** @type {HTMLDivElement} */
 const mecabDiv = document.getElementById('mecab');
+
+/** @type {HTMLInputElement} */
 const searchInput = document.getElementById('search');
+
+/** @type {HTMLButtonElement} */
 const loadMoreBtn = document.getElementById('load-more');
 
 loadMoreBtn.addEventListener('click', loadMore);
@@ -23,7 +29,7 @@ const onSearch = throttle(() => {
         mecabDiv.replaceChildren();
         lookup(search, false)
     } else {
-        mecabDiv.replaceChildren(...createMecabTokenElements(search, form => lookup(form)));
+        mecabDiv.replaceChildren(...createMecabTokenElements(mecabParse(search), form => lookup(form)));
         const event = new Event('click');
         mecabDiv.firstChild?.firstChild?.dispatchEvent(event);
     }

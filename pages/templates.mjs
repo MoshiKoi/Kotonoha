@@ -4,21 +4,24 @@
  * Various HTML templates
  */
 
-import { mecabParse } from "./mecab.mjs"
 import { massifLookup } from "./massif.mjs";
+import { User } from "./user.mjs";
 
 /**
  * 
- * @param {string} search
+ * @param {(import("./mecab.mjs").MecabToken & {isUnknown?: boolean})[]} tokenization
  * @param {function(string): any} onclick
  * @returns {HTMLSpanElement[]}
 */
-export function createMecabTokenElements(search, onclick) {
+export function createMecabTokenElements(tokenization, onclick) {
     const tokenEls = [];
 
-    for (const token of mecabParse(search)) {
+    for (const token of tokenization) {
         const tokenElement = document.createElement('button');
         tokenElement.classList.add('mecab-token');
+        if (token.isUnknown) {
+            tokenElement.classList.add('unknown')
+        }
 
         let attach = false;
 
@@ -70,11 +73,11 @@ async function createMassif(search) {
         if (details.open && loadingMessage != null) {
             loadingMessage.classList.remove('loading-message');
             const sentences = [];
-            for (const { sample_source: { title, url, publish_date }, text } of await massifLookup(search)) {
+            for (const { sample_source: { title, url, publish_date }, tokenization, unknown } of await massifLookup(search)) {
                 const sentenceWrapper = document.createElement('figure');
                 const quoteEl = document.createElement('blockquote');
                 quoteEl.cite = url;
-                quoteEl.replaceChildren(...createMecabTokenElements(text, () => console.log("Not implemented")));
+                quoteEl.replaceChildren(...createMecabTokenElements(tokenization, () => console.log("Not implemented")));
                 const citeWrapper = document.createElement('figcaption');
                 const citeNote = document.createElement('cite');
                 const citeLink = document.createElement('a');
@@ -111,7 +114,24 @@ export async function createEntry(entry) {
     formsEl.innerText = entry.forms.join('・');
     const readingEl = document.createElement('p');
     readingEl.innerText = entry.readings.join('・');
-    headingEl.append(formsEl, readingEl);
+    
+    const isKnownLabel = document.createElement('label');
+    isKnownLabel.innerText = 'Known?';
+    isKnownLabel.classList.add('is-known-toggle')
+    const isKnownToggle = document.createElement('input');
+    isKnownToggle.type = 'checkbox';
+    isKnownLabel.append(isKnownToggle);
+
+    isKnownToggle.checked = entry.forms.every(form => User.getKnownWords().includes(form));
+    isKnownToggle.addEventListener('change', _ => {
+        if (isKnownToggle.checked) {
+            User.addKnownWords(...entry.forms);
+        } else {
+            User.removeKnownWords(...entry.forms);
+        }
+    })
+
+    headingEl.append(isKnownLabel, formsEl, readingEl);
     const massifEl = await createMassif(entry.forms[0]);
 
     let part_of_speech = null;
