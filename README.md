@@ -9,10 +9,18 @@ View on GitHub Pages! https://moshikoi.github.io/Kotonoha/
  - Dictionary based on JMdict and Wiktionary
  - Sentence parser powered by UniDic
  - Example sentences from [massif.la](http://massif.la/ja)
+    - Sentences ordered by vocabulary knowledge, so sentences with fewer unknown words are ranked higher 
 
 # Todo
 
  - Better ordering of results
+    - Multi-token consideration
+       - For instance, currently you can only search for one token of おはよう|ござい|ます.
+         This should be changed so you will instead search for any of おはよう|おはようござい|おはようございます, as well as their dictionary forms.
+         The more tokens are matched, the higher the search score
+    - Better token merging heuristics
+ - More granualar vocabulary knowledge
+ - Import/export of user data
  - Unidic pitch accents
  - Stablize the database generation tools
 
