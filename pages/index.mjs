@@ -2,6 +2,7 @@
 import { createEntry, createMecabTokenElements } from "./templates.mjs";
 import { PaginatedQuery } from "./sql.mjs";
 import { mecabParse } from "./mecab.mjs";
+import { User } from "./user.mjs";
 
 /**
  * @param {function(...*): void} fn 
@@ -15,10 +16,23 @@ function throttle(fn, timeout) {
     }
 }
 
+const settingsDialog = /** @type {HTMLDialogElement} */ (document.getElementById('settings'));
+const settingsBtn = /** @type {HTMLButtonElement} */ (document.getElementById('settingsBtn'));
+const knownWordsArea = /** @type {HTMLTextAreaElement} */ (document.getElementById('known-words'));
 const mecabDiv = /** @type {HTMLDivElement} */ (document.getElementById('mecab'));
 const searchInput = /** @type {HTMLInputElement} */ (document.getElementById('search'));
 const loadMoreBtn = /** @type {HTMLButtonElement} */ (document.getElementById('load-more'));
 const resultsDiv = /** @type {HTMLDivElement} */ (document.getElementById('results'));
+
+for (const btn of document.getElementsByClassName('closeBtn')) {
+    btn.addEventListener('click', _ => btn.closest('dialog')?.close());
+}
+
+settingsBtn.addEventListener('click', _ => {
+    knownWordsArea.value = User.getKnownWords().join('\n');
+    settingsDialog.showModal()
+});
+knownWordsArea.addEventListener('change', _ => User.setKnownWords(knownWordsArea.value.split('\n')))
 
 loadMoreBtn.addEventListener('click', loadMore);
 

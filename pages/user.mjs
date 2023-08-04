@@ -8,6 +8,14 @@ export class User {
     })();
 
     /**
+     * @param {string[]} words 
+     */
+    static setKnownWords(words) {
+        this.#words = words;
+        localStorage.setItem('known-words', JSON.stringify(this.#words));
+    }
+
+    /**
      * @returns {string[]}
      */
     static getKnownWords() {

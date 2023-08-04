@@ -107,3 +107,7 @@ cite > a {
 .center {
     align-self: center;
 }
+
+.float-right {
+    float: right;
+}
